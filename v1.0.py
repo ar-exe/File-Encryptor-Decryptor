@@ -30,7 +30,7 @@ class FileEncryptorDecryptor:
         self.algorithms = ["Algorithm 1 (Caesar Cipher)", "Algorithm 2 (Substitution Cipher)",
                            "Algorithm 3 (ROT13 Cipher)", "Algorithm 4 (Rail Fence Cipher)",
                            "Algorithm 5 (Row Transposition Cipher)", "Algorithm 6 (Affine Cipher)",
-                           "Algorithm 7 (Playfair Cipher)"]
+                           "Algorithm 7 (Playfair Cipher)","Algorithm 8 (Vigenere Cipher)"]
         self.algorithm_var = tk.StringVar()
         self.algorithm_dropdown = tk.OptionMenu(self.algorithm_frame, self.algorithm_var, *self.algorithms)
         self.algorithm_dropdown.grid(row=0, column=1)
@@ -316,6 +316,33 @@ class FileEncryptorDecryptor:
                     plain_text += matrix[pos1[0]][pos2[1]] + matrix[pos2[0]][pos1[1]]
                 i += 2
         return plain_text
+    def vigenere_encrypt(self, plain_text, key):
+        plain_text = plain_text.upper()
+        key = key.upper()
+        encrypted_text = ""
+        for i in range(len(plain_text)):
+            char = plain_text[i]
+            key_char = key[i % len(key)]
+            if char.isalpha():
+                encrypted_char = chr(((ord(char) - 65 + ord(key_char) - 65) % 26) + 65)
+            else:
+                encrypted_char = char
+            encrypted_text += encrypted_char
+        return encrypted_text
+    def vigenere_decrypt(self, ciphertext, key):
+        decrypted_text = ''
+        key_length = len(key)
+        key_as_int = [ord(char) - ord('A') for char in key.upper()]
+        for i, char in enumerate(ciphertext):
+            if char.isalpha():
+                shift = key_as_int[i % key_length]
+                if char.isupper():
+                    decrypted_text += chr((ord(char) - shift - ord('A')) % 26 + ord('A'))
+                else:
+                    decrypted_text += chr((ord(char) - shift - ord('a')) % 26 + ord('a'))
+            else:
+                decrypted_text += char
+        return decrypted_text
 
 
     def encrypt_file(self):
@@ -386,6 +413,13 @@ class FileEncryptorDecryptor:
                 file.write(encrypted_text)
                 file.truncate()
             print("Encrypting file:", file_path, "using algorithm:", algorithm)
+        elif algorithm == "Algorithm 8 (Vigenere Cipher)":
+            with open(file_path, 'r+') as file:
+                text = file.read()
+                encrypted_text = self.vigenere_encrypt(text, key)
+                file.seek(0)
+                file.write(encrypted_text)
+            print("Encrypting file:", file_path, "using algorithm:", algorithm)
 
     def decrypt_file(self):
         file_path = self.file_path.get()
@@ -454,6 +488,13 @@ class FileEncryptorDecryptor:
                 file.seek(0)
                 file.write(decrypted_text)
                 file.truncate()
+            print("Decrypting file:", file_path, "using algorithm:", algorithm)
+        elif algorithm == "Algorithm 8 (Vigenere Cipher)":
+            with open(file_path, 'r+') as file:
+                text = file.read()
+                decrypted_text = self.vigenere_decrypt(text, key)
+                file.seek(0)
+                file.write(decrypted_text)
             print("Decrypting file:", file_path, "using algorithm:", algorithm)
 
 if __name__ == "__main__":
